@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-)
 
-import "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
+)
 
 var VERSION string = "1.0.0"
 

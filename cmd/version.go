@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-)
 
-import "github.com/spf13/cobra"
+	"github.com/spf13/cobra"
+)
 
 var VERSION string = "1.0.0"
 
