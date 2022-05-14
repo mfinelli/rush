@@ -11,6 +11,8 @@ import (
 
 import "github.com/gin-gonic/gin"
 
+var VERSION string = "1.0.0"
+
 func Serve() {
 	// Create context that listens for the interrupt signal from the OS.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -20,7 +22,49 @@ func Serve() {
 
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Welcome Gin Server")
+		c.String(http.StatusOK, "rush server version %s\n", VERSION)
+	})
+
+	router.GET("/host", func(c *gin.Context) {
+		t := c.DefaultQuery("t", "ed25519")
+		cn := c.Query("h")
+
+		if t == "rsa" {
+			r, err := generateRSAHostKey(cn)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "%v\n", err)
+			}
+
+			c.JSON(http.StatusOK, r)
+		} else {
+			r, err := generateEd25519HostKey(cn)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "%v\n", err)
+			}
+
+			c.JSON(http.StatusOK, r)
+		}
+	})
+
+	router.GET("/user", func(c *gin.Context) {
+		t := c.DefaultQuery("t", "ed25519")
+		cn := c.Query("u")
+
+		if t == "rsa" {
+			r, err := generateRSAUserKey(cn)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "%v\n", err)
+			}
+
+			c.JSON(http.StatusOK, r)
+		} else {
+			r, err := generateEd25519UserKey(cn)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "%v\n", err)
+			}
+
+			c.JSON(http.StatusOK, r)
+		}
 	})
 
 	srv := &http.Server{
