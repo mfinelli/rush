@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/ed25519"
 	"crypto/rand"
-	// "crypto/x509"
 	"encoding/pem"
 	"fmt"
 	"golang.org/x/crypto/ssh"
@@ -15,6 +14,11 @@ import "github.com/mikesmitty/edkey"
 import "github.com/google/uuid"
 
 func main() {
+	permissions := ssh.Permissions{
+		CriticalOptions: map[string]string{},
+		Extensions:      map[string]string{"permit-agent-forwarding": ""},
+	}
+
 	rawPublicKey, rawPrivateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -26,7 +30,7 @@ func main() {
 	}
 
 	pemPrivateKey := &pem.Block{
-		Type: "OPENSSH PRIVATE KEY",
+		Type:  "OPENSSH PRIVATE KEY",
 		Bytes: edkey.MarshalED25519PrivateKey(rawPrivateKey),
 	}
 
@@ -36,21 +40,28 @@ func main() {
 	fmt.Println(string(privateKey))
 	fmt.Println(string(publicKey))
 
-	// https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.certkeys#L73-L74
-	var userType uint32 = 1
-	// var hostType uint32 = 2
-
-	cert := ssh.Certificate{
-		Serial: 0,
-		CertType: userType,
-		Key: sshPublicKey,
-		KeyId: uuid.New().String(),
-		ValidPrincipals: []string{"test"},
-		ValidAfter: uint64(time.Now().Unix()),
-		ValidBefore: uint64(time.Now().Unix() + 30),
+	rawUserPublicKey, _, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
-	fmt.Printf("%v\n", cert)
+	sshUserPublicKey, err := ssh.NewPublicKey(rawUserPublicKey)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	cert := ssh.Certificate{
+		Serial:          0,
+		CertType:        ssh.UserCert,
+		Key:             sshUserPublicKey,
+		KeyId:           uuid.New().String(),
+		ValidPrincipals: []string{"test"},
+		Permissions:     permissions,
+		ValidAfter:      uint64(time.Now().Unix()),
+		ValidBefore:     uint64(time.Now().Unix() + 30),
+	}
+
+	// fmt.Printf("%v\n", cert)
 
 	signer, err := ssh.NewSignerFromKey(rawPrivateKey)
 	if err != nil {
@@ -62,5 +73,9 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	fmt.Printf("%v\n", cert)
+	// fmt.Printf("%v\n", cert)
+	signedKey := ssh.MarshalAuthorizedKey(&cert)
+	fmt.Println(string(ssh.MarshalAuthorizedKey(cert.SignatureKey)))
+	fmt.Println(string(signedKey))
+
 }
