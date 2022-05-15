@@ -1,5 +1,8 @@
 SOURCES := $(wildcard cmd/*.go)
+SOURCES += $(wildcard db/*.go)
 SOURCES += $(wildcard server/*.go)
+
+CGO_ENABLED := 1
 
 all: rush
 

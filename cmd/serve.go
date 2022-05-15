@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/mfinelli/rush/db"
 	"github.com/mfinelli/rush/server"
 )
 
@@ -12,6 +13,7 @@ var serveCmd = &cobra.Command{
 	Long: `The server component creates an HTTP server to listen (on port 8080) for
 incoming certificate signing requests and then returns a signed certificate.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		db.SetupDB()
 		server.Serve()
 	},
 }

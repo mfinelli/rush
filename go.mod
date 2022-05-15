@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/google/uuid v1.1.2
+	github.com/mattn/go-sqlite3 v1.14.13
 	github.com/mikesmitty/edkey v0.0.0-20170222072505-3356ea4e686a
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.11.0
