@@ -29,6 +29,43 @@ func Serve(rdb *gorm.DB) {
 		c.String(http.StatusOK, "rush server version %s\n", VERSION)
 	})
 
+	router.GET("/ca", func(c *gin.Context) {
+		t := c.DefaultQuery("t", "ed25519")
+
+		if t == "rsa" {
+			privateKey, publicKey, err := generateRSAKey()
+			if err != nil {
+				c.String(http.StatusInternalServerError, "%v\n", err)
+			}
+
+			rdb.Create(&db.CACertificate{
+				Type:       t,
+				PublicKey:  string(ssh.MarshalAuthorizedKey(publicKey)),
+				PrivateKey: string(convertRSAPrivateKeyToPem(privateKey)),
+			})
+
+			c.JSON(http.StatusOK, CACertificateResponse{
+				PublicKey: string(ssh.MarshalAuthorizedKey(publicKey)),
+			})
+		} else {
+			privateKey, publicKey, err := generateEd25519Key()
+			if err != nil {
+				c.String(http.StatusInternalServerError, "%v\n", err)
+			}
+
+			rdb.Create(&db.CACertificate{
+				Type:       t,
+				PublicKey:  string(ssh.MarshalAuthorizedKey(publicKey)),
+				PrivateKey: string(convertEd25519PrivateKeyToPem(privateKey)),
+			})
+
+			c.JSON(http.StatusOK, CACertificateResponse{
+				PublicKey: string(ssh.MarshalAuthorizedKey(publicKey)),
+			})
+		}
+
+	})
+
 	router.GET("/host", func(c *gin.Context) {
 		t := c.DefaultQuery("t", "ed25519")
 		cn := c.Query("h")

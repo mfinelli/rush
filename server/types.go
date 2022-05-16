@@ -4,6 +4,10 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+type CACertificateResponse struct {
+	PublicKey string `json:"public_key"`
+}
+
 type SignedKeyResponse struct {
 	CA         string `json:"ca"`
 	PublicKey  string `json:"public_key"`
