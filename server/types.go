@@ -1,7 +1,13 @@
 package server
 
 import (
+	"crypto/ed25519"
+	"crypto/rsa"
+
 	"golang.org/x/crypto/ssh"
+	"gorm.io/gorm"
+
+	"github.com/mfinelli/rush/db"
 )
 
 type CACertificateResponse struct {
@@ -14,9 +20,41 @@ type SignedKeyResponse struct {
 	PrivateKey string `json:"private_key"`
 }
 
-func generateRSAUserKey(username string) (SignedKeyResponse, error) {
-	// TODO: we should be consuming a CA key, not generating it on the fly
-	caPrivateKey, caPublicKey, err := generateRSAKey()
+func getLatestCA(t string, rdb *gorm.DB) (interface{}, string, error) {
+	var ca db.CACertificate
+	err := rdb.Where("type = ?", t).Order("updated_at desc").First(&ca).Error
+	if err != nil {
+		return nil, "", err
+	}
+
+	caPrivateKey, err := ssh.ParseRawPrivateKey([]byte(ca.PrivateKey))
+	if err != nil {
+		return nil, "", err
+	}
+
+	return caPrivateKey, ca.PublicKey, nil
+}
+
+func getLatestEd25519CA(rdb *gorm.DB) (*ed25519.PrivateKey, string, error) {
+	caPrivateKey, caPublicKey, err := getLatestCA("ed25519", rdb)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return caPrivateKey.(*ed25519.PrivateKey), caPublicKey, nil
+}
+
+func getLatestRSACA(rdb *gorm.DB) (*rsa.PrivateKey, string, error) {
+	caPrivateKey, caPublicKey, err := getLatestCA("rsa", rdb)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return caPrivateKey.(*rsa.PrivateKey), caPublicKey, nil
+}
+
+func generateRSAUserKey(rdb *gorm.DB, username string) (SignedKeyResponse, error) {
+	caPrivateKey, caPublicKey, err := getLatestRSACA(rdb)
 	if err != nil {
 		return SignedKeyResponse{}, err
 	}
@@ -27,15 +65,14 @@ func generateRSAUserKey(username string) (SignedKeyResponse, error) {
 	}
 
 	return SignedKeyResponse{
-		CA:         string(ssh.MarshalAuthorizedKey(caPublicKey)),
+		CA:         caPublicKey,
 		PublicKey:  string(ssh.MarshalAuthorizedKey(signedCertificate)),
 		PrivateKey: string(convertRSAPrivateKeyToPem(privateKey)),
 	}, nil
 }
 
-func generateEd25519UserKey(username string) (SignedKeyResponse, error) {
-	// TODO: we should be consuming a CA key, not generating it on the fly
-	caPrivateKey, caPublicKey, err := generateEd25519Key()
+func generateEd25519UserKey(rdb *gorm.DB, username string) (SignedKeyResponse, error) {
+	caPrivateKey, caPublicKey, err := getLatestEd25519CA(rdb)
 	if err != nil {
 		return SignedKeyResponse{}, err
 	}
@@ -46,15 +83,14 @@ func generateEd25519UserKey(username string) (SignedKeyResponse, error) {
 	}
 
 	return SignedKeyResponse{
-		CA:         string(ssh.MarshalAuthorizedKey(caPublicKey)),
+		CA:         caPublicKey,
 		PublicKey:  string(ssh.MarshalAuthorizedKey(signedCertificate)),
 		PrivateKey: string(convertEd25519PrivateKeyToPem(privateKey)),
 	}, nil
 }
 
-func generateRSAHostKey(hostname string) (SignedKeyResponse, error) {
-	// TODO: we should be consuming a CA key, not generating it on the fly
-	caPrivateKey, caPublicKey, err := generateRSAKey()
+func generateRSAHostKey(rdb *gorm.DB, hostname string) (SignedKeyResponse, error) {
+	caPrivateKey, caPublicKey, err := getLatestRSACA(rdb)
 	if err != nil {
 		return SignedKeyResponse{}, err
 	}
@@ -65,15 +101,14 @@ func generateRSAHostKey(hostname string) (SignedKeyResponse, error) {
 	}
 
 	return SignedKeyResponse{
-		CA:         string(ssh.MarshalAuthorizedKey(caPublicKey)),
+		CA:         caPublicKey,
 		PublicKey:  string(ssh.MarshalAuthorizedKey(signedCertificate)),
 		PrivateKey: string(convertRSAPrivateKeyToPem(privateKey)),
 	}, nil
 }
 
-func generateEd25519HostKey(hostname string) (SignedKeyResponse, error) {
-	// TODO: we should be consuming a CA key, not generating it on the fly
-	caPrivateKey, caPublicKey, err := generateEd25519Key()
+func generateEd25519HostKey(rdb *gorm.DB, hostname string) (SignedKeyResponse, error) {
+	caPrivateKey, caPublicKey, err := getLatestEd25519CA(rdb)
 	if err != nil {
 		return SignedKeyResponse{}, err
 	}
@@ -84,7 +119,7 @@ func generateEd25519HostKey(hostname string) (SignedKeyResponse, error) {
 	}
 
 	return SignedKeyResponse{
-		CA:         string(ssh.MarshalAuthorizedKey(caPublicKey)),
+		CA:         caPublicKey,
 		PublicKey:  string(ssh.MarshalAuthorizedKey(signedCertificate)),
 		PrivateKey: string(convertEd25519PrivateKeyToPem(privateKey)),
 	}, nil

@@ -71,14 +71,14 @@ func Serve(rdb *gorm.DB) {
 		cn := c.Query("h")
 
 		if t == "rsa" {
-			r, err := generateRSAHostKey(cn)
+			r, err := generateRSAHostKey(rdb, cn)
 			if err != nil {
 				c.String(http.StatusInternalServerError, "%v\n", err)
 			}
 
 			c.JSON(http.StatusOK, r)
 		} else {
-			r, err := generateEd25519HostKey(cn)
+			r, err := generateEd25519HostKey(rdb, cn)
 			if err != nil {
 				c.String(http.StatusInternalServerError, "%v\n", err)
 			}
@@ -92,14 +92,14 @@ func Serve(rdb *gorm.DB) {
 		cn := c.Query("u")
 
 		if t == "rsa" {
-			r, err := generateRSAUserKey(cn)
+			r, err := generateRSAUserKey(rdb, cn)
 			if err != nil {
 				c.String(http.StatusInternalServerError, "%v\n", err)
 			}
 
 			c.JSON(http.StatusOK, r)
 		} else {
-			r, err := generateEd25519UserKey(cn)
+			r, err := generateEd25519UserKey(rdb, cn)
 			if err != nil {
 				c.String(http.StatusInternalServerError, "%v\n", err)
 			}
