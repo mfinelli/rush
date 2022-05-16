@@ -40,6 +40,7 @@ func Serve(rdb *gorm.DB) {
 				c.String(http.StatusInternalServerError, "%v\n", err)
 			}
 
+			// TODO: error handling
 			rdb.Create(&db.CACertificate{
 				Type:       t,
 				PublicKey:  string(ssh.MarshalAuthorizedKey(publicKey)),

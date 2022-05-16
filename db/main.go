@@ -12,6 +12,8 @@ func SetupDB() (*gorm.DB, error) {
 	}
 
 	db.AutoMigrate(&CACertificate{})
+	db.AutoMigrate(&HostCertificate{})
+	db.AutoMigrate(&UserCertificate{})
 
 	return db, nil
 }

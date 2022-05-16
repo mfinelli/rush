@@ -1,13 +1,8 @@
 package server
 
 import (
-	"crypto/ed25519"
-	"crypto/rsa"
-
 	"golang.org/x/crypto/ssh"
 	"gorm.io/gorm"
-
-	"github.com/mfinelli/rush/db"
 )
 
 type CACertificateResponse struct {
@@ -20,41 +15,8 @@ type SignedKeyResponse struct {
 	PrivateKey string `json:"private_key"`
 }
 
-func getLatestCA(t string, rdb *gorm.DB) (interface{}, string, error) {
-	var ca db.CACertificate
-	err := rdb.Where("type = ?", t).Order("updated_at desc").First(&ca).Error
-	if err != nil {
-		return nil, "", err
-	}
-
-	caPrivateKey, err := ssh.ParseRawPrivateKey([]byte(ca.PrivateKey))
-	if err != nil {
-		return nil, "", err
-	}
-
-	return caPrivateKey, ca.PublicKey, nil
-}
-
-func getLatestEd25519CA(rdb *gorm.DB) (*ed25519.PrivateKey, string, error) {
-	caPrivateKey, caPublicKey, err := getLatestCA("ed25519", rdb)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return caPrivateKey.(*ed25519.PrivateKey), caPublicKey, nil
-}
-
-func getLatestRSACA(rdb *gorm.DB) (*rsa.PrivateKey, string, error) {
-	caPrivateKey, caPublicKey, err := getLatestCA("rsa", rdb)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return caPrivateKey.(*rsa.PrivateKey), caPublicKey, nil
-}
-
 func generateRSAUserKey(rdb *gorm.DB, username string) (SignedKeyResponse, error) {
-	caPrivateKey, caPublicKey, err := getLatestRSACA(rdb)
+	caPrivateKey, caPublicKey, ca, err := getLatestRSACA(rdb)
 	if err != nil {
 		return SignedKeyResponse{}, err
 	}
@@ -64,15 +26,23 @@ func generateRSAUserKey(rdb *gorm.DB, username string) (SignedKeyResponse, error
 		return SignedKeyResponse{}, err
 	}
 
+	pemPublicKey := string(ssh.MarshalAuthorizedKey(signedCertificate))
+	pemPrivateKey := string(convertRSAPrivateKeyToPem(privateKey))
+
+	err = saveUserKey(rdb, "rsa", signedCertificate, pemPublicKey, pemPrivateKey, ca)
+	if err != nil {
+		return SignedKeyResponse{}, err
+	}
+
 	return SignedKeyResponse{
 		CA:         caPublicKey,
-		PublicKey:  string(ssh.MarshalAuthorizedKey(signedCertificate)),
-		PrivateKey: string(convertRSAPrivateKeyToPem(privateKey)),
+		PublicKey:  pemPublicKey,
+		PrivateKey: pemPrivateKey,
 	}, nil
 }
 
 func generateEd25519UserKey(rdb *gorm.DB, username string) (SignedKeyResponse, error) {
-	caPrivateKey, caPublicKey, err := getLatestEd25519CA(rdb)
+	caPrivateKey, caPublicKey, ca, err := getLatestEd25519CA(rdb)
 	if err != nil {
 		return SignedKeyResponse{}, err
 	}
@@ -82,15 +52,23 @@ func generateEd25519UserKey(rdb *gorm.DB, username string) (SignedKeyResponse, e
 		return SignedKeyResponse{}, err
 	}
 
+	pemPublicKey := string(ssh.MarshalAuthorizedKey(signedCertificate))
+	pemPrivateKey := string(convertEd25519PrivateKeyToPem(privateKey))
+
+	err = saveUserKey(rdb, "ed25519", signedCertificate, pemPublicKey, pemPrivateKey, ca)
+	if err != nil {
+		return SignedKeyResponse{}, err
+	}
+
 	return SignedKeyResponse{
 		CA:         caPublicKey,
-		PublicKey:  string(ssh.MarshalAuthorizedKey(signedCertificate)),
-		PrivateKey: string(convertEd25519PrivateKeyToPem(privateKey)),
+		PublicKey:  pemPublicKey,
+		PrivateKey: pemPrivateKey,
 	}, nil
 }
 
 func generateRSAHostKey(rdb *gorm.DB, hostname string) (SignedKeyResponse, error) {
-	caPrivateKey, caPublicKey, err := getLatestRSACA(rdb)
+	caPrivateKey, caPublicKey, ca, err := getLatestRSACA(rdb)
 	if err != nil {
 		return SignedKeyResponse{}, err
 	}
@@ -100,15 +78,23 @@ func generateRSAHostKey(rdb *gorm.DB, hostname string) (SignedKeyResponse, error
 		return SignedKeyResponse{}, err
 	}
 
+	pemPublicKey := string(ssh.MarshalAuthorizedKey(signedCertificate))
+	pemPrivateKey := string(convertRSAPrivateKeyToPem(privateKey))
+
+	err = saveHostKey(rdb, "rsa", signedCertificate, pemPublicKey, pemPrivateKey, ca)
+	if err != nil {
+		return SignedKeyResponse{}, err
+	}
+
 	return SignedKeyResponse{
 		CA:         caPublicKey,
-		PublicKey:  string(ssh.MarshalAuthorizedKey(signedCertificate)),
-		PrivateKey: string(convertRSAPrivateKeyToPem(privateKey)),
+		PublicKey:  pemPublicKey,
+		PrivateKey: pemPrivateKey,
 	}, nil
 }
 
 func generateEd25519HostKey(rdb *gorm.DB, hostname string) (SignedKeyResponse, error) {
-	caPrivateKey, caPublicKey, err := getLatestEd25519CA(rdb)
+	caPrivateKey, caPublicKey, ca, err := getLatestEd25519CA(rdb)
 	if err != nil {
 		return SignedKeyResponse{}, err
 	}
@@ -118,9 +104,17 @@ func generateEd25519HostKey(rdb *gorm.DB, hostname string) (SignedKeyResponse, e
 		return SignedKeyResponse{}, err
 	}
 
+	pemPublicKey := string(ssh.MarshalAuthorizedKey(signedCertificate))
+	pemPrivateKey := string(convertEd25519PrivateKeyToPem(privateKey))
+
+	err = saveHostKey(rdb, "ed25519", signedCertificate, pemPublicKey, pemPrivateKey, ca)
+	if err != nil {
+		return SignedKeyResponse{}, err
+	}
+
 	return SignedKeyResponse{
 		CA:         caPublicKey,
-		PublicKey:  string(ssh.MarshalAuthorizedKey(signedCertificate)),
-		PrivateKey: string(convertEd25519PrivateKeyToPem(privateKey)),
+		PublicKey:  pemPublicKey,
+		PrivateKey: pemPrivateKey,
 	}, nil
 }
