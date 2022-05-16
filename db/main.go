@@ -1,22 +1,17 @@
 package db
 
 import (
-	"database/sql"
-
-	_ "github.com/mattn/go-sqlite3"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
-func SetupDB() error {
-	db, err := sql.Open("sqlite3", "./test.db")
+func SetupDB() (*gorm.DB, error) {
+	db, err := gorm.Open(sqlite.Open("./test.db"), &gorm.Config{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	rdb := NewRushDB(db)
+	db.AutoMigrate(&CACertificate{})
 
-	if err := rdb.Migrate(); err != nil {
-		return err
-	}
-
-	return nil
+	return db, nil
 }

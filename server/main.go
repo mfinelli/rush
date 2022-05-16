@@ -9,11 +9,15 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/ssh"
+	"gorm.io/gorm"
+
+	"github.com/mfinelli/rush/db"
 )
 
 var VERSION string = "1.0.0"
 
-func Serve() {
+func Serve(rdb *gorm.DB) {
 	// Create context that listens for the interrupt signal from the OS.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
