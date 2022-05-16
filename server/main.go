@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os/signal"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh"
 	"gorm.io/gorm"
 
@@ -108,8 +110,10 @@ func Serve(rdb *gorm.DB) {
 		}
 	})
 
+	log.Printf("rush server version %s running on port %d", VERSION, viper.Get("server.port"))
+
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%d", viper.Get("server.port")),
 		Handler: router,
 	}
 
