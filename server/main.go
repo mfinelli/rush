@@ -15,9 +15,9 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/mfinelli/rush/db"
+	"github.com/mfinelli/rush/version"
 )
 
-var VERSION string = "1.0.0"
 
 func Serve(rdb *gorm.DB) {
 	// Create context that listens for the interrupt signal from the OS.
@@ -28,7 +28,7 @@ func Serve(rdb *gorm.DB) {
 
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "rush server version %s\n", VERSION)
+		c.String(http.StatusOK, "rush server version %s\n", version.VERSION.Version)
 	})
 
 	router.GET("/ca", func(c *gin.Context) {
@@ -111,7 +111,7 @@ func Serve(rdb *gorm.DB) {
 		}
 	})
 
-	log.Printf("rush server version %s running on port %d", VERSION, viper.Get("server.port"))
+	log.Printf("rush server version %s running on port %d", version.VERSION.Version, viper.Get("server.port"))
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", viper.Get("server.port")),

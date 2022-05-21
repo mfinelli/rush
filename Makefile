@@ -9,7 +9,7 @@ all: rush
 clean:
 	rm -rf rush
 
-rush: main.go $(SOURCES)
+rush: main.go $(SOURCES) package.json
 	go build -o $@ -tags=nomsgpack main.go
 
 .PHONY: all clean
