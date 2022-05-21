@@ -1,0 +1,22 @@
+{
+  "name": "rush",
+  "version": "1.0.0",
+  "description": "an ssh certificate server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mfinelli/rush.git"
+  },
+  "keywords": [
+    "ssh"
+  ],
+  "author": "Mario Finelli <mario@finel.li>",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/mfinelli/rush/issues"
+  },
+  "homepage": "https://github.com/mfinelli/rush#readme"
+}
