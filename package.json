@@ -2,7 +2,8 @@
   "name": "rush",
   "version": "1.0.0",
   "description": "an ssh certificate server",
-  "main": "index.js",
+  "homepage": "https://github.com/mfinelli/rush#readme",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,6 +18,5 @@
   "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/mfinelli/rush/issues"
-  },
-  "homepage": "https://github.com/mfinelli/rush#readme"
+  }
 }
