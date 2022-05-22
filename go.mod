@@ -8,12 +8,14 @@ require (
 	github.com/mikesmitty/edkey v0.0.0-20170222072505-3356ea4e686a
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.11.0
+	github.com/tg123/go-htpasswd v1.2.0
 	golang.org/x/crypto v0.0.0-20220513210258-46612604a0f9
 	gorm.io/driver/sqlite v1.3.2
 	gorm.io/gorm v1.23.5
 )
 
 require (
+	github.com/GehirnInc/crypt v0.0.0-20200316065508-bb7000b8a962 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect

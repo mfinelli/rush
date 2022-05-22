@@ -13,7 +13,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/render"
 	"github.com/spf13/viper"
+	"github.com/tg123/go-htpasswd"
 	"golang.org/x/crypto/ssh"
 	"gorm.io/gorm"
 
@@ -34,6 +36,71 @@ func Serve(rdb *gorm.DB) {
 	router := gin.Default()
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "rush server version %s\n", version.VERSION.Version)
+	})
+
+	router.GET("/login", func(c *gin.Context) {
+		t, err := Templates.ReadFile("src/login.html.tmpl")
+		if err != nil {
+			c.String(http.StatusInternalServerError, "%v\n", err)
+		}
+
+		tmpl, err := template.New("login").Parse(string(t))
+		if err != nil {
+			c.String(http.StatusInternalServerError, "%v\n", err)
+		}
+
+		data := struct{
+			Lang string
+			Title string
+			ResetPasswordLink string
+		}{
+			Lang: "en",
+			Title: "Login",
+			ResetPasswordLink: "https://example.com",
+		}
+
+		var rendered bytes.Buffer
+		if err := tmpl.Execute(&rendered, data); err != nil {
+			c.String(http.StatusInternalServerError, "%v\n", err)
+		}
+
+		c.Render(http.StatusOK, render.Data{
+			ContentType: "text/html; charset=utf-8",
+			Data:        rendered.Bytes(),
+		})
+	})
+
+	router.POST("/auth", func(c *gin.Context) {
+		if viper.Get("server.auth").(string) == "htpasswd" {
+			auth, err := htpasswd.New(viper.Get("server.htpasswd").(string), htpasswd.DefaultSystems, nil)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "%v\n", err)
+			}
+
+			if auth.Match(c.PostForm("username"), c.PostForm("password")) {
+				// TODO: redirect
+				c.String(http.StatusOK, "success\n")
+			} else {
+				// TODO: redirect bad password
+				c.String(http.StatusOK, "failue\n")
+			}
+		} else {
+			c.String(http.StatusInternalServerError, "Unsupported auth method %s\n", viper.Get("server.auth"))
+		}
+	})
+
+	router.GET("/static/login.css", func(c *gin.Context) {
+		file, err := DistFiles.ReadFile("dist/login.css")
+		if err != nil {
+			c.String(http.StatusInternalServerError, "%v\n", err)
+		}
+
+		// c.Header("Key", "Value")
+
+		c.Render(http.StatusOK, render.Data{
+			ContentType: "text/css",
+			Data:        file,
+		})
 	})
 
 	router.GET("/ca", func(c *gin.Context) {
