@@ -1,0 +1,72 @@
+@import "normalize.css";
+
+body {
+  background-color: #f1f1f1;
+  font-size: 1.5rem;
+  font-family: "Open Sans", sans-serif;
+  color: #000000;
+}
+
+form {
+  background-color: #ffffff;
+  max-width: 360px;
+  padding: 2rem;
+  margin: 2rem auto;
+	text-align: center;
+	border-radius: 1rem;
+	box-shadow: 0 4rem 5rem 0 rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+  text-align: center;
+}
+
+label {
+  /* TODO: we should make this work for screen readers */
+  display: none;
+}
+
+input {
+	color: #8a8b8e;
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	outline: none;
+	height: 4rem;
+	line-height: 4rem;
+	border-radius: 0.75rem;
+	margin: 2rem 0;
+	padding: 0.5rem;
+	border: 1px solid #c2c0ca;
+}
+
+button {
+	border: none;
+	display: block;
+	background-color: #3ca9e2;
+	color: #ffffff;
+	font-weight: bold;
+	text-transform: uppercase;
+	transition: all 0.2s ease;
+	font-size: 2.5rem;
+	text-align: center;
+	padding: 0.5rem;
+	width: 100%;
+	border-radius: 0.75rem;
+}
+
+button:hover {
+	background-color: #329dd5;
+	transition: all 0.2s ease;
+}
+
+a, a:link, a:visited, a:active {
+  color: #3ca9e2;
+  transition: all 0.2s ease;
+}
+
+a:focus, a:hover, a:link:focus, a:link:hover, a:visited:focus,
+a:visited:hover, a:active:focus, a:active:hover {
+  color: #329dd5;
+  transition: all 0.2s ease;
+}

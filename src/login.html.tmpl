@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang={{ .Lang }}>
+<head>
+  <meta charset="UTF-8">
+  <title>{{ .Title }}</title>
+  <link rel="stylesheet" href="/static/login.css">
+</head>
+<body>
+	<form method="POST" action="/auth">
+	  <h1>Login</h1>
+		<div>
+			<label for="username">Username</label>
+			<input type="username" id="username" name="username"
+				placeholder="username" required="required">
+		</div>
+		<div>
+			<label for="password">Password</label>
+			<input type="password" id="password" name="password"
+				placeholder="password" required="required">
+		</div>
+		<div>
+			<button type="submit">Login</button>
+		</div>
+		<p>Forgot Password? <a href="{{ .ResetPasswordLink }}">Reset</a></p>
+	</form>
+</body>
+</html>

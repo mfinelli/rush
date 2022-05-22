@@ -5,6 +5,7 @@
   "homepage": "https://github.com/mfinelli/rush#readme",
   "private": true,
   "scripts": {
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,5 +19,19 @@
   "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/mfinelli/rush/issues"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.7",
+    "css-loader": "^6.7.1",
+    "css-minimizer-webpack-plugin": "^4.0.0",
+    "mini-css-extract-plugin": "^2.6.0",
+    "postcss-loader": "^7.0.0",
+    "sass": "^1.52.1",
+    "sass-loader": "^13.0.0",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2"
+  },
+  "dependencies": {
+    "normalize.css": "^8.0.1"
   }
 }
