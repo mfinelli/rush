@@ -1,8 +1,11 @@
 package server
 
 import (
+	"bytes"
 	"context"
+	"embed"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os/signal"
@@ -18,6 +21,8 @@ import (
 	"github.com/mfinelli/rush/version"
 )
 
+var DistFiles embed.FS
+var Templates embed.FS
 
 func Serve(rdb *gorm.DB) {
 	// Create context that listens for the interrupt signal from the OS.
