@@ -1,0 +1,21 @@
+---
+name: CI
+on: push
+
+jobs:
+  default:
+    name: default
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - run: make all
+      - run: '[[ -z $(go fmt ./...) ]]'
+      # - run: npm run lint
+      - run: go test -v ./...
+      # - run: npm run test
