@@ -49,13 +49,13 @@ func Serve(rdb *gorm.DB) {
 			c.String(http.StatusInternalServerError, "%v\n", err)
 		}
 
-		data := struct{
-			Lang string
-			Title string
+		data := struct {
+			Lang              string
+			Title             string
 			ResetPasswordLink string
 		}{
-			Lang: "en",
-			Title: "Login",
+			Lang:              "en",
+			Title:             "Login",
 			ResetPasswordLink: "https://example.com",
 		}
 
