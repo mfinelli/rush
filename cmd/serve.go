@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -13,6 +11,7 @@ import (
 
 	"github.com/mfinelli/rush/db"
 	"github.com/mfinelli/rush/server"
+	"github.com/mfinelli/rush/util"
 )
 
 var serveCmd = &cobra.Command{
@@ -43,6 +42,8 @@ func initConfig() {
 	viper.SetEnvPrefix("rush")
 
 	viper.SetDefault("server.port", 8080)
+	viper.SetDefault("server.auth", "htpasswd")
+	viper.SetDefault("server.htpasswd", "/etc/rush/htpasswd")
 
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
@@ -56,18 +57,9 @@ func initConfig() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv() // read in environment variables that match
 
-	// env variables get parsed as strings, but we use some as ints
-	// check those types and convert to int if necessary
-	if reflect.TypeOf(viper.Get("server.port")).Kind() == reflect.String {
-		intval, err := strconv.Atoi(viper.Get("server.port").(string))
-		if err != nil {
-			// TODO: we should handle this better
-			//       if we don't get a valid port (<65k) then we
-			//       need to let the user know
-			log.Panic(err)
-		}
-
-		viper.Set("server.port", intval)
+	if err := util.ValidateConfig(); err != nil {
+		// TODO: do better
+		log.Panic(err)
 	}
 
 	// If a config file is found, read it in.

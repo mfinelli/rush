@@ -8,7 +8,6 @@ WEBPACK := webpack.config.js package.json node_modules
 LOGIN_INPUTS := src/login.js src/login.scss
 LOGIN_OUTPUTS := dist/login.js dist/login.css
 
-
 CGO_ENABLED := 1
 
 all: rush

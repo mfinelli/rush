@@ -8,6 +8,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+func ValidateConfig() error {
+	if err := normalizeServerPort(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func normalizeServerPort() error {
 	key := "server.port"
 
