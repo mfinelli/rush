@@ -15,7 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	"github.com/spf13/viper"
-	"github.com/tg123/go-htpasswd"
 	"golang.org/x/crypto/ssh"
 	"gorm.io/gorm"
 
@@ -70,24 +69,7 @@ func Serve(rdb *gorm.DB) {
 		})
 	})
 
-	router.POST("/auth", func(c *gin.Context) {
-		if viper.Get("server.auth").(string) == "htpasswd" {
-			auth, err := htpasswd.New(viper.Get("server.htpasswd").(string), htpasswd.DefaultSystems, nil)
-			if err != nil {
-				c.String(http.StatusInternalServerError, "%v\n", err)
-			}
-
-			if auth.Match(c.PostForm("username"), c.PostForm("password")) {
-				// TODO: redirect
-				c.String(http.StatusOK, "success\n")
-			} else {
-				// TODO: redirect bad password
-				c.String(http.StatusOK, "failue\n")
-			}
-		} else {
-			c.String(http.StatusInternalServerError, "Unsupported auth method %s\n", viper.Get("server.auth"))
-		}
-	})
+	router.POST("/auth", postAuth)
 
 	router.GET("/static/login.css", func(c *gin.Context) {
 		file, err := DistFiles.ReadFile("dist/login.css")
